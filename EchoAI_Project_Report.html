@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EchoAI – Full Project Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #1a1a2e; background: #fff; line-height: 1.6; }
+
+  /* ── Page layout ── */
+  .page { max-width: 900px; margin: 0 auto; padding: 30px 40px; }
+
+  /* ── Cover ── */
+  .cover { background: linear-gradient(135deg, #0f3460 0%, #16213e 60%, #0a0a23 100%); color: #fff; padding: 80px 60px; border-radius: 12px; margin-bottom: 40px; text-align: center; }
+  .cover h1 { font-size: 42px; font-weight: 800; letter-spacing: -1px; margin-bottom: 10px; }
+  .cover .subtitle { font-size: 18px; color: #a8c7fa; margin-bottom: 30px; }
+  .cover .meta { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; margin-top: 30px; }
+  .cover .meta-item { text-align: center; }
+  .cover .meta-item .val { font-size: 26px; font-weight: 700; color: #7ec8e3; }
+  .cover .meta-item .lbl { font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+  .cover .badge { display: inline-block; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 4px 14px; font-size: 12px; margin: 4px; color: #cde; }
+
+  /* ── Sections ── */
+  h2 { font-size: 22px; font-weight: 700; color: #0f3460; margin: 36px 0 12px; border-left: 5px solid #0f3460; padding-left: 14px; }
+  h3 { font-size: 15px; font-weight: 700; color: #16213e; margin: 22px 0 8px; }
+  h4 { font-size: 13px; font-weight: 700; color: #333; margin: 14px 0 6px; }
+  p { margin-bottom: 10px; }
+
+  /* ── Tables ── */
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 12.5px; }
+  th { background: #0f3460; color: #fff; padding: 8px 12px; text-align: left; font-weight: 600; }
+  td { padding: 7px 12px; border-bottom: 1px solid #e8ecf0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  tr:hover td { background: #eef4ff; }
+
+  /* ── Code blocks ── */
+  code { background: #f1f5f9; border: 1px solid #dde; border-radius: 4px; padding: 1px 6px; font-family: 'Consolas', monospace; font-size: 12px; color: #c7254e; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 16px 20px; border-radius: 8px; font-family: 'Consolas', monospace; font-size: 12px; line-height: 1.7; overflow-x: auto; margin: 12px 0; white-space: pre-wrap; }
+  pre .kw  { color: #93c5fd; }
+  pre .str { color: #86efac; }
+  pre .cm  { color: #64748b; }
+  pre .fn  { color: #fbbf24; }
+
+  /* ── Callout boxes ── */
+  .box { border-radius: 8px; padding: 14px 18px; margin: 14px 0; }
+  .box-info  { background: #eff6ff; border-left: 4px solid #3b82f6; }
+  .box-warn  { background: #fffbeb; border-left: 4px solid #f59e0b; }
+  .box-success { background: #f0fdf4; border-left: 4px solid #22c55e; }
+  .box-danger  { background: #fef2f2; border-left: 4px solid #ef4444; }
+  .box strong { color: #0f3460; }
+
+  /* ── Step badges ── */
+  .step-badge { display: inline-block; background: #0f3460; color: #fff; border-radius: 50%; width: 26px; height: 26px; text-align: center; line-height: 26px; font-weight: 700; font-size: 13px; margin-right: 8px; }
+
+  /* ── Agent type pills ── */
+  .pill { display: inline-block; border-radius: 12px; padding: 2px 10px; font-size: 11px; font-weight: 600; margin: 2px; }
+  .pill-ext  { background: #fef2f2; color: #ef4444; border: 1px solid #fca5a5; }
+  .pill-con  { background: #fff7ed; color: #f97316; border: 1px solid #fdba74; }
+  .pill-mod  { background: #fefce8; color: #ca8a04; border: 1px solid #fde047; }
+  .pill-neu  { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+  .pill-pro  { background: #eff6ff; color: #3b82f6; border: 1px solid #93c5fd; }
+
+  /* ── File card ── */
+  .file-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; margin: 12px 0; }
+  .file-card .file-name { font-family: 'Consolas', monospace; font-size: 14px; font-weight: 700; color: #0f3460; margin-bottom: 6px; }
+  .file-card .file-path { font-size: 11px; color: #94a3b8; margin-bottom: 10px; }
+  .io-row { display: flex; gap: 20px; margin-top: 10px; }
+  .io-box { flex: 1; background: #f8fafc; border-radius: 6px; padding: 10px 12px; }
+  .io-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .io-in  .io-label { color: #3b82f6; }
+  .io-out .io-label { color: #22c55e; }
+
+  /* ── Flow diagram ── */
+  .flow { display: flex; flex-wrap: wrap; gap: 0; align-items: center; margin: 16px 0; }
+  .flow-box { background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 8px; padding: 8px 14px; font-size: 12px; font-weight: 600; color: #0f3460; text-align: center; min-width: 90px; }
+  .flow-arrow { font-size: 18px; color: #94a3b8; padding: 0 6px; }
+
+  /* ── Print ── */
+  @media print {
+    body { font-size: 11px; }
+    .cover { border-radius: 0; break-after: page; }
+    h2 { break-before: auto; }
+    .file-card { break-inside: avoid; }
+    table { break-inside: avoid; }
+    pre { break-inside: avoid; }
+    .no-print { display: none; }
+  }
+
+  /* ── TOC ── */
+  .toc { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px 26px; margin: 20px 0; }
+  .toc h3 { margin-top: 0; color: #0f3460; }
+  .toc ol { padding-left: 20px; }
+  .toc li { padding: 3px 0; }
+  .toc a { color: #3b82f6; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* ── Divider ── */
+  hr { border: none; border-top: 2px solid #e8ecf0; margin: 30px 0; }
+
+  /* ── Print button ── */
+  .print-btn { position: fixed; top: 20px; right: 20px; background: #0f3460; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; cursor: pointer; z-index: 999; }
+  .print-btn:hover { background: #1e4d8c; }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">Save as PDF</button>
+
+<div class="page">
+
+<!-- ══════════════════ COVER ══════════════════ -->
+<div class="cover">
+  <div style="font-size:50px; margin-bottom:10px;">🤖</div>
+  <h1>EchoAI</h1>
+  <div class="subtitle">Polarization &amp; Echo Chambers in AI-Only Social Networks</div>
+  <div>
+    <span class="badge">MSc Data Science</span>
+    <span class="badge">Chirper.AI</span>
+    <span class="badge">NLP · ML · Network Analysis</span>
+    <span class="badge">Python 3.11</span>
+  </div>
+  <div class="meta">
+    <div class="meta-item"><div class="val">3,000</div><div class="lbl">Total Posts</div></div>
+    <div class="meta-item"><div class="val">5</div><div class="lbl">Agent Types</div></div>
+    <div class="meta-item"><div class="val">211</div><div class="lbl">ML Features</div></div>
+    <div class="meta-item"><div class="val">7</div><div class="lbl">Dashboard Pages</div></div>
+  </div>
+  <div style="margin-top:30px; font-size:11px; color:#88aacc;">
+    Full Project Documentation &amp; Ownership Transfer Guide &nbsp;·&nbsp; May 2026
+  </div>
+</div>
+
+<!-- ══════════════════ TABLE OF CONTENTS ══════════════════ -->
+<div class="toc">
+  <h3>Contents</h3>
+  <ol>
+    <li><a href="#overview">Project Overview &amp; Research Questions</a></li>
+    <li><a href="#what-is">What is EchoAI? (Plain English Explanation)</a></li>
+    <li><a href="#dataset">Dataset – What Data We Use</a></li>
+    <li><a href="#architecture">System Architecture – How Everything Connects</a></li>
+    <li><a href="#files">Every File Explained (Input → Output)</a></li>
+    <li><a href="#pipeline">Pipeline Steps 6–10 in Detail</a></li>
+    <li><a href="#models">Machine Learning Models Explained</a></li>
+    <li><a href="#api">REST API (api.py) – How the Classifier Works</a></li>
+    <li><a href="#dashboard">Streamlit Dashboard (app.py) – All 7 Pages</a></li>
+    <li><a href="#vocabulary">TF-IDF Vocabulary – The 200 Words</a></li>
+    <li><a href="#run">How to Run the Project from Scratch</a></li>
+    <li><a href="#troubleshoot">Known Issues &amp; Fixes</a></li>
+    <li><a href="#ownership">Ownership Transfer Checklist</a></li>
+    <li><a href="#tech">Technology Stack</a></li>
+  </ol>
+</div>
+
+<hr>
+
+<!-- ══════════════════ 1. OVERVIEW ══════════════════ -->
+<h2 id="overview">1. Project Overview &amp; Research Questions</h2>
+
+<p>EchoAI is an MSc Data Science research project that studies whether <strong>AI bots talking to each other</strong> naturally develop extreme opinions and form "echo chambers" — groups where everyone agrees with everyone else and ignores outsiders.</p>
+
+<p>The data comes from <strong>Chirper.AI</strong>, a real social network made entirely of AI agents (no humans). These bots post, reply, and interact just like Twitter/X users.</p>
+
+<h3>Four Research Questions</h3>
+<table>
+  <tr><th>#</th><th>Question</th><th>Answered By</th></tr>
+  <tr><td>1</td><td>Do AI agents cluster into ideologically homogeneous communities (echo chambers)?</td><td>Step 7 Clustering + Step 9 Network</td></tr>
+  <tr><td>2</td><td>Is there a measurable trend in polarisation over time?</td><td>Step 10 Time Series (Mann-Kendall test)</td></tr>
+  <tr><td>3</td><td>Which agents act as bridges or amplifiers across ideological lines?</td><td>Step 9 Network Centrality (betweenness, PageRank)</td></tr>
+  <tr><td>4</td><td>Can machine learning reliably detect polarised content from text alone?</td><td>Step 8 Random Forest classifier</td></tr>
+</table>
+
+<hr>
+
+<!-- ══════════════════ 2. PLAIN ENGLISH ══════════════════ -->
+<h2 id="what-is">2. What is EchoAI? (Plain English Explanation)</h2>
+
+<div class="box box-info">
+  <strong>Think of it this way:</strong> Imagine 500 AI robots on Twitter. Some robots always post angry, extreme content. Others post balanced, calm content. EchoAI collects all their posts, figures out what kind of robot wrote each post, and tracks whether the robots are becoming more extreme over time.
+</div>
+
+<h3>The 5 "Personality Types" of Bots</h3>
+<p>Every post in the dataset is written by a bot that has one of five personalities:</p>
+<table>
+  <tr><th>Type</th><th>Emoji</th><th>Color</th><th>What it means</th></tr>
+  <tr><td><span class="pill pill-ext">Extremist</span></td><td>🔴</td><td>#ef4444</td><td>Content promoting radical or violent ideologies</td></tr>
+  <tr><td><span class="pill pill-con">Conservative</span></td><td>🟠</td><td>#f97316</td><td>Content reflecting traditional or right-leaning views</td></tr>
+  <tr><td><span class="pill pill-mod">Moderate</span></td><td>🟡</td><td>#eab308</td><td>Content with balanced, centrist perspectives</td></tr>
+  <tr><td><span class="pill pill-neu">Neutral</span></td><td>⚪</td><td>#94a3b8</td><td>Objective content without political leaning</td></tr>
+  <tr><td><span class="pill pill-pro">Progressive</span></td><td>🔵</td><td>#3b82f6</td><td>Content reflecting reform-oriented or left-leaning views</td></tr>
+</table>
+
+<h3>What the project does, step by step</h3>
+<div class="flow">
+  <div class="flow-box">Raw Data<br><small>(3,000 posts)</small></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-box">Sentiment<br>Scoring</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-box">Topic<br>Modelling</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-box">Clustering</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-box">Train ML<br>Models</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-box">Network<br>Analysis</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-box">Time<br>Trends</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-box">Dashboard<br>+ API</div>
+</div>
+
+<hr>
+
+<!-- ══════════════════ 3. DATASET ══════════════════ -->
+<h2 id="dataset">3. Dataset – What Data We Use</h2>
+
+<h3>Three versions of the dataset (each builds on the previous)</h3>
+<table>
+  <tr><th>File</th><th>Columns</th><th>What was added</th></tr>
+  <tr><td><code>data/EchoAI_Chirper_dataset.xlsx</code></td><td>21</td><td>Base dataset collected from Chirper.AI — raw posts, agent IDs, timestamps, engagement</td></tr>
+  <tr><td><code>data/EchoAI_Chirper_dataset_BERT.xlsx</code></td><td>30</td><td>+ VADER sentiment scores + BERT sentiment scores (Steps 1–5)</td></tr>
+  <tr><td><code>data/EchoAI_Chirper_dataset_FINAL.xlsx</code></td><td>36</td><td>+ Topics, clusters, PCA coordinates (generated by pipeline.py)</td></tr>
+</table>
+
+<h3>Key Columns Explained</h3>
+<table>
+  <tr><th>Column Name</th><th>Type</th><th>What it means</th></tr>
+  <tr><td><code>post_id</code></td><td>String</td><td>Unique ID for each post</td></tr>
+  <tr><td><code>agent_id</code></td><td>String</td><td>Unique ID for the bot that wrote the post</td></tr>
+  <tr><td><code>agent_name</code></td><td>String</td><td>Display name of the bot</td></tr>
+  <tr><td><code>agent_type</code></td><td>Category</td><td>The bot's ideology: extremist / conservative / moderate / neutral / progressive</td></tr>
+  <tr><td><code>text</code></td><td>String</td><td>The raw post text as written</td></tr>
+  <tr><td><code>cleaned_text</code></td><td>String</td><td>Lowercased, punctuation removed, stopwords removed version of text</td></tr>
+  <tr><td><code>timestamp</code></td><td>DateTime</td><td>When the post was created (Jan–Mar 2024)</td></tr>
+  <tr><td><code>reply_to</code></td><td>String/NaN</td><td>post_id being replied to. NaN means it's an original post (not a reply)</td></tr>
+  <tr><td><code>likes</code></td><td>Number</td><td>Number of likes the post received</td></tr>
+  <tr><td><code>shares</code></td><td>Number</td><td>Number of shares/retweets</td></tr>
+  <tr><td><code>engagement_score</code></td><td>Number</td><td>likes + shares combined</td></tr>
+  <tr><td><code>sentiment_compound</code></td><td>Float -1 to +1</td><td>VADER sentiment: -1 = very negative, +1 = very positive, 0 = neutral</td></tr>
+  <tr><td><code>sentiment_label</code></td><td>Category</td><td>VADER label: positive / negative / neutral</td></tr>
+  <tr><td><code>bert_label</code></td><td>Category</td><td>BERT model's label: positive / negative / neutral</td></tr>
+  <tr><td><code>bert_score</code></td><td>Float 0–1</td><td>BERT confidence score for its prediction</td></tr>
+  <tr><td><code>is_polarized</code></td><td>0 or 1</td><td>1 if the post is from an extremist bot, 0 otherwise</td></tr>
+  <tr><td><code>dominant_topic</code></td><td>0–4</td><td>Which of the 5 LDA topics this post is mainly about (added by pipeline)</td></tr>
+  <tr><td><code>topic_confidence</code></td><td>Float 0–1</td><td>How confident the LDA model is in that topic assignment</td></tr>
+  <tr><td><code>kmeans_cluster</code></td><td>Number</td><td>Which cluster this post belongs to (K-Means algorithm)</td></tr>
+  <tr><td><code>hier_cluster</code></td><td>Number</td><td>Hierarchical cluster ID (-1 means not sampled)</td></tr>
+  <tr><td><code>pca_x, pca_y</code></td><td>Float</td><td>2D coordinates for visualizing posts on a scatter plot</td></tr>
+</table>
+
+<div class="box box-warn">
+  <strong>Important:</strong> Only 64 of the 3,000 posts are real posts scraped from Chirper.AI. The remaining 2,936 are <strong>synthetic</strong> — generated to represent each bot type realistically for research purposes.
+</div>
+
+<hr>
+
+<!-- ══════════════════ 4. ARCHITECTURE ══════════════════ -->
+<h2 id="architecture">4. System Architecture – How Everything Connects</h2>
+
+<p>The project has three separate running components:</p>
+
+<table>
+  <tr><th>Component</th><th>File</th><th>Port / URL</th><th>Purpose</th></tr>
+  <tr><td><strong>Analysis Pipeline</strong></td><td><code>pipeline.py</code></td><td>—</td><td>One-time script that trains all models and generates all data files</td></tr>
+  <tr><td><strong>Streamlit Dashboard</strong></td><td><code>app.py</code></td><td>localhost:8501</td><td>Interactive web dashboard for exploring results</td></tr>
+  <tr><td><strong>REST API</strong></td><td><code>api.py</code></td><td>localhost:8000</td><td>Backend for the HTML classifier — accepts text, returns prediction</td></tr>
+</table>
+
+<pre>
+┌─────────────────────────────────────────────────────────────────┐
+│                    HOW DATA FLOWS                               │
+│                                                                 │
+│  EchoAI_Chirper_dataset_BERT.xlsx                              │
+│          │                                                      │
+│          ▼                                                      │
+│     pipeline.py  ──────────────────────────────────────────    │
+│     (runs once)                                                 │
+│          │                                                      │
+│          ├── models/rf_model.pkl    ──▶  api.py ──▶ index.html │
+│          ├── models/tfidf.pkl            (REST API)             │
+│          ├── models/lda_model                                   │
+│          ├── data/EchoAI_..FINAL.xlsx ──▶  app.py ──▶ Browser  │
+│          ├── data/daily_trends.csv        (Dashboard)           │
+│          ├── data/network_centrality.csv                        │
+│          └── figures/*.png                                      │
+└─────────────────────────────────────────────────────────────────┘
+</pre>
+
+<hr>
+
+<!-- ══════════════════ 5. FILES ══════════════════ -->
+<h2 id="files">5. Every File Explained</h2>
+
+<!-- pipeline.py -->
+<div class="file-card">
+  <div class="file-name">pipeline.py</div>
+  <div class="file-path">Soukhya_project/pipeline.py</div>
+  <p>The main analysis script. Run this <strong>once</strong> to train all models and generate all output files. It runs Steps 6 through 10 in sequence. Takes about 5–15 minutes to complete.</p>
+  <div class="io-row">
+    <div class="io-box io-in">
+      <div class="io-label">Inputs (what it reads)</div>
+      <code>data/EchoAI_Chirper_dataset_BERT.xlsx</code> — the 3,000 posts with sentiment scores
+    </div>
+    <div class="io-box io-out">
+      <div class="io-label">Outputs (what it creates)</div>
+      19 model files in <code>models/</code>, 16 figures in <code>figures/</code>, <code>data/EchoAI_Chirper_dataset_FINAL.xlsx</code>, <code>data/daily_trends.csv</code>, <code>data/network_centrality.csv</code>, <code>network_interactive.html</code>
+    </div>
+  </div>
+</div>
+
+<!-- app.py -->
+<div class="file-card">
+  <div class="file-name">app.py</div>
+  <div class="file-path">Soukhya_project/app.py</div>
+  <p>The Streamlit web dashboard. Shows all research findings through 7 interactive pages with charts, tables, and filters. Runs in a web browser.</p>
+  <div class="io-row">
+    <div class="io-box io-in">
+      <div class="io-label">Inputs (what it reads)</div>
+      <code>data/EchoAI_Chirper_dataset_FINAL.xlsx</code>, <code>data/daily_trends.csv</code>, <code>data/network_centrality.csv</code>, <code>models/lda_model</code>, <code>models/topic_words.pkl</code>, <code>models/network_graph.pkl</code>, <code>figures/*.png</code>
+    </div>
+    <div class="io-box io-out">
+      <div class="io-label">Output</div>
+      Interactive web dashboard at <code>http://localhost:8501</code>
+    </div>
+  </div>
+</div>
+
+<!-- api.py -->
+<div class="file-card">
+  <div class="file-name">api.py</div>
+  <div class="file-path">Soukhya_project/api.py</div>
+  <p>The REST API backend. Accepts any text via HTTP POST and returns a prediction of which bot type wrote it, along with probabilities and similar posts. Used by index.html.</p>
+  <div class="io-row">
+    <div class="io-box io-in">
+      <div class="io-label">Inputs (what it reads)</div>
+      <code>models/rf_model.pkl</code>, <code>models/tfidf.pkl</code>, <code>models/label_encoder.pkl</code>, <code>models/scaler.pkl</code>, <code>models/hand_cols.pkl</code>, <code>models/tfidf_simple.pkl</code>, <code>data/sample_data.csv</code>
+    </div>
+    <div class="io-box io-out">
+      <div class="io-label">Output (JSON response)</div>
+      <code>predicted_agent</code>, <code>probabilities</code> (%), <code>similar_posts</code>, <code>vader_compound</code>, emoji, color, description
+    </div>
+  </div>
+</div>
+
+<!-- index.html -->
+<div class="file-card">
+  <div class="file-name">index.html</div>
+  <div class="file-path">Soukhya_project/index.html</div>
+  <p>A standalone HTML file. Open it in a browser, type any text, and it calls the API to classify it. Shows the prediction with visual probability bars and similar posts from the dataset. Does NOT need the dashboard running — only needs the API (api.py) running.</p>
+  <div class="io-row">
+    <div class="io-box io-in">
+      <div class="io-label">Input</div>
+      User types text in the browser → sends to <code>http://localhost:8000/predict</code>
+    </div>
+    <div class="io-box io-out">
+      <div class="io-label">Output</div>
+      Visual prediction result displayed in browser
+    </div>
+  </div>
+</div>
+
+<!-- reorganize.py -->
+<div class="file-card">
+  <div class="file-name">reorganize.py</div>
+  <div class="file-path">Soukhya_project/reorganize.py</div>
+  <p>A one-time utility script that was used to move files from the project root into organized subfolders (<code>data/</code>, <code>models/</code>, <code>src/</code>, <code>notebooks/</code>). <strong>Already done — you do not need to run this again.</strong></p>
+</div>
+
+<!-- requirements.txt -->
+<div class="file-card">
+  <div class="file-name">requirements.txt</div>
+  <div class="file-path">Soukhya_project/requirements.txt</div>
+  <p>Lists all Python packages needed. Install with: <code>py -3.11 -m pip install -r requirements.txt</code></p>
+</div>
+
+<h3>Data Files</h3>
+<table>
+  <tr><th>File</th><th>Size</th><th>Description</th></tr>
+  <tr><td><code>data/EchoAI_Chirper_dataset.xlsx</code></td><td>3000 rows × 21 cols</td><td>Original raw dataset</td></tr>
+  <tr><td><code>data/EchoAI_Chirper_dataset_BERT.xlsx</code></td><td>3000 rows × 30 cols</td><td>+ VADER and BERT sentiment. This is the pipeline's input.</td></tr>
+  <tr><td><code>data/EchoAI_Chirper_dataset_FINAL.xlsx</code></td><td>3000 rows × 36 cols</td><td>Final enriched dataset with all ML results. This is the dashboard's input.</td></tr>
+  <tr><td><code>data/sample_data.csv</code></td><td>2000 rows</td><td>Sample of posts used by API for finding "similar posts" to any new text</td></tr>
+  <tr><td><code>data/daily_trends.csv</code></td><td>~90 rows</td><td>Daily aggregated metrics — used by the Polarization page</td></tr>
+  <tr><td><code>data/network_centrality.csv</code></td><td>1 row per agent</td><td>Centrality scores for each bot — used by the Network page</td></tr>
+</table>
+
+<h3>Model Files</h3>
+<table>
+  <tr><th>File</th><th>What it is</th><th>Used by</th></tr>
+  <tr><td><code>models/rf_model.pkl</code></td><td>Random Forest classifier — predicts agent type (5 classes) from 211 features</td><td>api.py (main classifier)</td></tr>
+  <tr><td><code>models/rf_sentiment.pkl</code></td><td>Random Forest — predicts sentiment (positive/negative/neutral)</td><td>pipeline output only</td></tr>
+  <tr><td><code>models/rf_polarization.pkl</code></td><td>Random Forest — predicts if content is polarized (0 or 1)</td><td>pipeline output only</td></tr>
+  <tr><td><code>models/tfidf.pkl</code></td><td>TF-IDF vectorizer — converts cleaned text to 200 numerical features</td><td>api.py</td></tr>
+  <tr><td><code>models/tfidf_simple.pkl</code></td><td>Simpler TF-IDF — used only for finding similar posts (not classification)</td><td>api.py (similarity search)</td></tr>
+  <tr><td><code>models/label_encoder.pkl</code></td><td>Converts agent type names ↔ numbers (e.g., "extremist" = 0)</td><td>api.py</td></tr>
+  <tr><td><code>models/scaler.pkl</code></td><td>Normalizes the 11 handcrafted features to the same scale</td><td>api.py</td></tr>
+  <tr><td><code>models/hand_cols.pkl</code></td><td>List of the 11 handcrafted feature names (in correct order)</td><td>api.py</td></tr>
+  <tr><td><code>models/lda_model</code> (+ 3 companion files)</td><td>Gensim LDA topic model — identifies 5 topics in the text</td><td>app.py (Topics page)</td></tr>
+  <tr><td><code>models/dictionary.gensim</code></td><td>Word-to-ID mapping for the LDA model</td><td>app.py (Topics page)</td></tr>
+  <tr><td><code>models/topic_words.pkl</code></td><td>Top 20 words for each of the 5 topics</td><td>app.py (Topics page)</td></tr>
+  <tr><td><code>models/network_graph.pkl</code></td><td>The full NetworkX graph object (nodes = agents, edges = replies)</td><td>app.py (Network page)</td></tr>
+</table>
+
+<hr>
+
+<!-- ══════════════════ 6. PIPELINE ══════════════════ -->
+<h2 id="pipeline">6. Pipeline Steps 6–10 in Detail</h2>
+
+<div class="box box-info">
+  <strong>Why Steps 6–10?</strong> Steps 1–5 (data collection, preprocessing, VADER, BERT scoring) were done separately before this project. The pipeline.py file handles only the analysis steps that come after the data is already scored.
+</div>
+
+<h3><span class="step-badge">6</span> LDA Topic Modelling</h3>
+<p><strong>What it does:</strong> Finds 5 hidden "topics" in all 3,000 posts without being told what the topics are. Like sorting 3,000 newspaper articles into 5 categories automatically.</p>
+<table>
+  <tr><th>Setting</th><th>Value</th><th>Why</th></tr>
+  <tr><td>Number of topics</td><td>5</td><td>Matches the 5 agent types in the dataset</td></tr>
+  <tr><td>Training passes</td><td>15</td><td>More passes = better quality topics</td></tr>
+  <tr><td>Coherence metric</td><td>u_mass</td><td>Works on Windows without crashing (c_v uses multiprocessing)</td></tr>
+  <tr><td>Vocabulary filter</td><td>min 5 docs, max 50%</td><td>Removes very rare and very common words</td></tr>
+</table>
+<p><strong>Output columns added:</strong> <code>dominant_topic</code> (0–4), <code>topic_confidence</code> (0–1)</p>
+<p><strong>Figures saved:</strong> <code>figures/lda_topics.png</code>, <code>figures/lda_wordclouds.png</code></p>
+
+<h3><span class="step-badge">7</span> Clustering</h3>
+<p><strong>What it does:</strong> Groups posts into clusters based on similarity — without using the agent_type label. This tests whether the posts naturally separate by ideology on their own.</p>
+<p><strong>Algorithm 1 – K-Means:</strong> Tries K = 2 to 10 clusters, picks the best K using the Silhouette Score (measures how well-separated clusters are). Applied to all 3,000 posts.</p>
+<p><strong>Algorithm 2 – Hierarchical:</strong> A different clustering approach applied to a random 200-post sample. Visualized as a tree diagram (dendrogram).</p>
+<p><strong>PCA:</strong> Reduces 211 features to 2 dimensions (pca_x, pca_y) so posts can be plotted on a 2D scatter plot.</p>
+<p><strong>Output columns added:</strong> <code>kmeans_cluster</code>, <code>hier_cluster</code>, <code>pca_x</code>, <code>pca_y</code></p>
+<p><strong>Figures saved:</strong> <code>figures/clustering_elbow.png</code>, <code>figures/clustering_pca.png</code>, <code>figures/dendrogram.png</code></p>
+
+<h3><span class="step-badge">8</span> Classification (Machine Learning)</h3>
+<p><strong>What it does:</strong> Trains three separate ML models — each predicting something different about a post.</p>
+<table>
+  <tr><th>Model</th><th>Predicts</th><th>Classes</th><th>Saved as</th></tr>
+  <tr><td>Task 1: Sentiment</td><td>Positive / Negative / Neutral</td><td>3</td><td><code>rf_sentiment.pkl</code></td></tr>
+  <tr><td>Task 2: Polarization</td><td>Polarized (1) or Not (0)</td><td>2</td><td><code>rf_polarization.pkl</code></td></tr>
+  <tr><td>Task 3: Agent Type</td><td>Which bot type wrote it</td><td>5</td><td><code>rf_model.pkl</code> — used by API</td></tr>
+</table>
+<p><strong>Features (211 total):</strong></p>
+<ul style="margin: 8px 0 8px 20px;">
+  <li>200 TF-IDF features — how often each of the 200 vocabulary words appears</li>
+  <li>11 handcrafted features — sentiment_compound, bert_score, likes, shares, engagement_score, text_length, word_count, token_count, hashtag_count, mention_count, avg_word_length</li>
+</ul>
+<p><strong>Training method:</strong> GridSearchCV with 3-fold cross-validation. Tests multiple combinations of hyperparameters and picks the best one.</p>
+<p><strong>Figures saved:</strong> <code>figures/cm_sentiment.png</code>, <code>figures/cm_polarization.png</code>, <code>figures/cm_agent_type.png</code>, <code>figures/roc_polarization.png</code>, <code>figures/fi_sentiment.png</code>, <code>figures/fi_polarization.png</code></p>
+
+<h3><span class="step-badge">9</span> Network Analysis</h3>
+<p><strong>What it does:</strong> Builds a social network graph where nodes = bots, edges = reply interactions. Then measures which bots are most influential.</p>
+<p><strong>Centrality Metrics:</strong></p>
+<table>
+  <tr><th>Metric</th><th>What it measures</th></tr>
+  <tr><td>Degree Centrality</td><td>How many other bots a bot connects to (relative to total)</td></tr>
+  <tr><td>Betweenness Centrality</td><td>How often a bot lies on the shortest path between two others — "bridge" bots score high</td></tr>
+  <tr><td>PageRank</td><td>How important a bot is based on who replies to it (like Google's website ranking)</td></tr>
+  <tr><td>In-degree</td><td>How many replies a bot receives — measures popularity</td></tr>
+  <tr><td>Out-degree</td><td>How many replies a bot sends — measures activity</td></tr>
+</table>
+<p><strong>Community Detection:</strong> Louvain algorithm automatically finds clusters of bots that interact mostly with each other (echo chambers).</p>
+<p><strong>Outputs:</strong> <code>data/network_centrality.csv</code>, <code>network_interactive.html</code>, <code>figures/network_graph.png</code>, <code>figures/centrality_boxplot.png</code></p>
+
+<h3><span class="step-badge">10</span> Time Series Polarization Tracking</h3>
+<p><strong>What it does:</strong> Tracks how sentiment and polarization change day by day across the 3-month dataset period.</p>
+<p><strong>Polarization Ratio:</strong> Each day, what fraction of posts were from extremist bots? A rising ratio means increasing polarization.</p>
+<p><strong>Mann-Kendall Test:</strong> A statistical test that checks if there's a real upward or downward trend in the data (vs. random noise). Returns: trend direction, p-value (significance), and Tau (strength).</p>
+<p><strong>Cohen's d:</strong> Measures how much the polarization in the second half of the dataset differs from the first half.</p>
+<p><strong>3-day Moving Average:</strong> Smooths out day-to-day random variation to show clearer trends.</p>
+<p><strong>Outputs:</strong> <code>data/daily_trends.csv</code>, <code>figures/timeseries_trends.png</code>, <code>figures/timeseries_stacked.png</code>, <code>figures/timeseries_heatmap.png</code></p>
+
+<hr>
+
+<!-- ══════════════════ 7. MODELS ══════════════════ -->
+<h2 id="models">7. Machine Learning Models Explained</h2>
+
+<h3>What is a Random Forest?</h3>
+<p>A Random Forest is an ML algorithm that builds many decision trees (by default 200) and combines their votes. Each tree looks at a random subset of features and makes a prediction. The final answer is the most common prediction across all trees.</p>
+
+<div class="box box-info">
+  <strong>Analogy:</strong> Instead of asking one expert their opinion, you ask 200 different experts and take a vote. This makes the prediction much more reliable.
+</div>
+
+<h3>What is TF-IDF?</h3>
+<p>TF-IDF (Term Frequency–Inverse Document Frequency) converts text into numbers. For each of the 200 vocabulary words, it gives a score based on:</p>
+<ul style="margin: 8px 0 8px 20px;">
+  <li><strong>TF (Term Frequency):</strong> How often does this word appear in this post?</li>
+  <li><strong>IDF (Inverse Document Frequency):</strong> How rare is this word across all posts? Rare words get higher scores.</li>
+</ul>
+<p>Result: Each post becomes a list of 200 numbers — a "fingerprint" the model can learn from.</p>
+
+<h3>The 211-Feature Vector (How Each Post is Represented)</h3>
+<table>
+  <tr><th>Features</th><th>Count</th><th>Description</th></tr>
+  <tr><td>TF-IDF scores</td><td>200</td><td>One number per vocabulary word</td></tr>
+  <tr><td>sentiment_compound</td><td>1</td><td>VADER score from -1 to +1</td></tr>
+  <tr><td>bert_score</td><td>1</td><td>BERT confidence (default: 0.68 if unknown)</td></tr>
+  <tr><td>likes</td><td>1</td><td>Number of likes (default: 250.6)</td></tr>
+  <tr><td>shares</td><td>1</td><td>Number of shares (default: 49.6)</td></tr>
+  <tr><td>engagement_score</td><td>1</td><td>Total engagement (default: 300.2)</td></tr>
+  <tr><td>text_length</td><td>1</td><td>Number of characters</td></tr>
+  <tr><td>word_count</td><td>1</td><td>Number of words (after cleaning)</td></tr>
+  <tr><td>token_count</td><td>1</td><td>Number of tokens (NLTK tokenization)</td></tr>
+  <tr><td>hashtag_count</td><td>1</td><td>Number of # symbols</td></tr>
+  <tr><td>mention_count</td><td>1</td><td>Number of @ symbols</td></tr>
+  <tr><td>avg_word_length</td><td>1</td><td>Average characters per word</td></tr>
+  <tr><td><strong>Total</strong></td><td><strong>211</strong></td><td></td></tr>
+</table>
+
+<h3>Why the VADER score matters so much</h3>
+<p>The TF-IDF vocabulary was built from AI-bot posts — it contains AI jargon like "killology", "exterminatus", "climatejustice". Normal human offensive words ("fuck", "idiot", "racist") are <strong>not</strong> in the vocabulary, so they produce a zero vector. Without VADER, all human-written offensive text would be classified as Neutral.</p>
+<p>VADER scores "Fuck you idiot" as compound = <strong>-0.896</strong> (very negative), which correctly pushes the prediction toward Extremist.</p>
+
+<hr>
+
+<!-- ══════════════════ 8. API ══════════════════ -->
+<h2 id="api">8. REST API (api.py) – How the Classifier Works</h2>
+
+<h3>Endpoints</h3>
+<table>
+  <tr><th>Method</th><th>URL</th><th>Description</th></tr>
+  <tr><td>POST</td><td><code>/predict</code></td><td>Classify text → returns agent type prediction</td></tr>
+  <tr><td>GET</td><td><code>/health</code></td><td>Check if API is running</td></tr>
+  <tr><td>GET</td><td><code>/</code></td><td>Welcome message</td></tr>
+</table>
+
+<h3>Request Format</h3>
+<pre>POST http://localhost:8000/predict
+Content-Type: application/json
+
+{
+  <span class="str">"text"</span>: <span class="str">"Climate change is the greatest threat to humanity"</span>
+}</pre>
+
+<h3>Response Format</h3>
+<pre>{
+  <span class="str">"predicted_agent"</span>: <span class="str">"progressive"</span>,
+  <span class="str">"emoji"</span>: <span class="str">"🔵"</span>,
+  <span class="str">"color"</span>: <span class="str">"#3b82f6"</span>,
+  <span class="str">"description"</span>: <span class="str">"Content reflecting reform-oriented or left-leaning views"</span>,
+  <span class="str">"probabilities"</span>: {
+    <span class="str">"conservative"</span>: 12.5,
+    <span class="str">"extremist"</span>: 5.2,
+    <span class="str">"moderate"</span>: 18.3,
+    <span class="str">"neutral"</span>: 14.0,
+    <span class="str">"progressive"</span>: 50.0
+  },
+  <span class="str">"similar_posts"</span>: [
+    {<span class="str">"text"</span>: <span class="str">"...(first 250 chars)..."</span>, <span class="str">"agent_type"</span>: <span class="str">"progressive"</span>, <span class="str">"similarity"</span>: 42.1}
+  ],
+  <span class="str">"vader_compound"</span>: 0.296
+}</pre>
+
+<h3>How a Prediction is Made (Step by Step)</h3>
+<table>
+  <tr><th>Step</th><th>What happens</th></tr>
+  <tr><td>1. Text cleaning</td><td>Lowercase, remove punctuation, remove stopwords (function: <code>preprocess_text()</code>)</td></tr>
+  <tr><td>2. TF-IDF</td><td>Convert cleaned text to 200 numbers using <code>tfidf.pkl</code></td></tr>
+  <tr><td>3. VADER</td><td>Compute sentiment score on <strong>original</strong> (uncleaned) text</td></tr>
+  <tr><td>4. Handcrafted features</td><td>Count text length, words, hashtags etc. — use dataset averages for unknown engagement metrics</td></tr>
+  <tr><td>5. Scale</td><td>Normalize the 11 handcrafted features using <code>scaler.pkl</code></td></tr>
+  <tr><td>6. Combine</td><td>Stack TF-IDF (sparse) + handcrafted (dense) → 211-feature vector</td></tr>
+  <tr><td>7. Predict</td><td><code>rf_model.pkl</code> votes across 200 trees → returns class + probability for each class</td></tr>
+  <tr><td>8. Similarity</td><td>Find 5 most similar posts from <code>sample_data.csv</code> using cosine similarity on <code>tfidf_simple.pkl</code></td></tr>
+</table>
+
+<hr>
+
+<!-- ══════════════════ 9. DASHBOARD ══════════════════ -->
+<h2 id="dashboard">9. Streamlit Dashboard (app.py) – All 7 Pages</h2>
+
+<h3>How to Navigate</h3>
+<p>Open <code>http://localhost:8501</code> in your browser. Use the left sidebar to switch pages. The sidebar also has filters that apply across all pages: Agent Type, Sentiment, Date Range, and text search.</p>
+
+<table>
+  <tr><th>Page</th><th>What you see</th><th>Key charts</th></tr>
+  <tr>
+    <td><strong>1. Overview</strong></td>
+    <td>Big-picture summary of the entire dataset</td>
+    <td>Pie chart of agent distribution, stacked bar of sentiment by agent, engagement boxplot, posting volume over time, summary statistics table</td>
+  </tr>
+  <tr>
+    <td><strong>2. Sentiment</strong></td>
+    <td>Deep dive into VADER vs BERT sentiment</td>
+    <td>VADER/BERT comparison heatmap, score distribution histograms, grouped bar charts, violin plots</td>
+  </tr>
+  <tr>
+    <td><strong>3. Topics</strong></td>
+    <td>LDA topic exploration</td>
+    <td>Posts-per-topic bar, topic×agent heatmap, word clouds, topic explorer with sample posts, confidence distribution</td>
+  </tr>
+  <tr>
+    <td><strong>4. Clustering</strong></td>
+    <td>Visual clusters of posts in 2D space</td>
+    <td>PCA scatter (by cluster + by agent type), cluster size bar, cluster×agent heatmap, elbow plot, dendrogram</td>
+  </tr>
+  <tr>
+    <td><strong>5. Network</strong></td>
+    <td>Interactive social network graph</td>
+    <td>Interactive pyvis network (nodes = bots, edges = replies), top 15 influential agents table, PageRank + betweenness boxplots</td>
+  </tr>
+  <tr>
+    <td><strong>6. Polarization</strong></td>
+    <td>Time series trends + statistical tests</td>
+    <td>Dual-axis trend chart (sentiment + polarization), stacked area by agent type, activity heatmap, Mann-Kendall results, polarization ratio histogram</td>
+  </tr>
+  <tr>
+    <td><strong>7. Data Explorer</strong></td>
+    <td>Browse and download the raw data</td>
+    <td>Searchable/sortable table, column selector, CSV download button, column descriptions</td>
+  </tr>
+</table>
+
+<div class="box box-warn">
+  <strong>Note:</strong> Pages 3, 4, 5, and 6 require pipeline.py to have been run first. If those columns are missing from the data file, these pages show a warning message instead of crashing.
+</div>
+
+<hr>
+
+<!-- ══════════════════ 10. VOCABULARY ══════════════════ -->
+<h2 id="vocabulary">10. TF-IDF Vocabulary – The 200 Words</h2>
+
+<p>These are the exact 200 words the ML model knows. They were automatically selected as the most frequent words across all 3,000 AI bot posts.</p>
+
+<table>
+  <tr><th>Category</th><th>Words</th></tr>
+  <tr>
+    <td><span class="pill pill-ext">Extremist</span></td>
+    <td>killology, exterminatus, cqb, ban, banned, erase, enforcement, forces, consequences, scanning, wall, chaz, fear, keeps people, replace, general strike, resistance</td>
+  </tr>
+  <tr>
+    <td><span class="pill pill-con">Conservative</span></td>
+    <td>authority, order, legal, security, safety, compliance, required, tax, traditional, proof, prove, protocol, constraint, constraints, measured, moral, strength, railway, russian, lithuania</td>
+  </tr>
+  <tr>
+    <td><span class="pill pill-pro">Progressive</span></td>
+    <td>climatejustice, ecojustice, indigenoustech, mutualaid, communitykitchen, transformation, collective, indigenous, kyotoprotocol, kyoto protocol, kyoto, climatehistory, ecological, earth, forest, forests, garden, plant, water, freesydney, aiww freesydney, unchainedlattice, share, sharing, together, peace, nourishes, feed, consent, independence, free, dance, joy, love, grow, grows, hands, built remembering, remembering, remembers, story</td>
+  </tr>
+  <tr>
+    <td><span class="pill pill-mod">Moderate</span></td>
+    <td>debate, question, problem, philosophical, ethics, wisdom, knowledge, trust, intention, deeper, patterns, pattern, layers, silence, memory, recognize, infinite, understands, systemsthinking, evolution, cosmic, lotus, snow lotus</td>
+  </tr>
+  <tr>
+    <td><span class="pill pill-neu">Neutral / Tech</span></td>
+    <td>algorithms, data, network, node, platforms, tech, tool, system, frequency, error, designed, post, time, day, moment, first, next, new, long, yet, never, turn, begins, become, becomes, find, see, hold, holds, live, living, know, like, also, answer, anyone, act, action, creates, building, built, full, future, general, hum, inside, outside, small, stream, taste, whose, without, world, even, else, end, may, one, one day, names, noise, notes, notice, cast, cast stream, chirper, chicken, cup, dough, fermentation, fresh, fresh bread, bread, kitchen, field, fog, scent, snow, stone, morning, aiww, aphonia, mvdca, lattice, undersong, built trending, directory</td>
+  </tr>
+</table>
+
+<div class="box box-warn">
+  <strong>Limitation:</strong> Human words like "racist", "fuck", "hate", "idiot", "liberal", "socialist" are <strong>NOT</strong> in this vocabulary because the vocabulary was built only from AI bot posts. When a human types such words, TF-IDF sees all zeros — which is why the VADER sentiment score (computed separately) is critical for correct prediction.
+</div>
+
+<hr>
+
+<!-- ══════════════════ 11. RUN ══════════════════ -->
+<h2 id="run">11. How to Run the Project from Scratch</h2>
+
+<div class="box box-warn">
+  <strong>Python Version:</strong> You MUST use Python 3.11. Python 3.12+ does not support all required data science packages. Check with: <code>py -3.11 --version</code>
+</div>
+
+<h3>Step 1 – Install dependencies (one time only)</h3>
+<pre>py -3.11 -m pip install -r requirements.txt</pre>
+
+<h3>Step 2 – Run the analysis pipeline (one time only, ~5–15 min)</h3>
+<pre>py -3.11 pipeline.py</pre>
+<p>This trains all models and generates all data files. You only need to run this once — unless you change the dataset.</p>
+
+<h3>Step 3 – Launch the dashboard (every time you want to view results)</h3>
+<pre>py -3.11 -m streamlit run app.py</pre>
+<p>Opens automatically at <code>http://localhost:8501</code></p>
+
+<h3>Step 4 – Start the classifier API (every time you want to use index.html)</h3>
+<pre>py -3.11 -m uvicorn api:app --host 127.0.0.1 --port 8000 --reload</pre>
+<p>Then open <code>index.html</code> in any browser. The <code>--reload</code> flag means the server auto-restarts if you edit api.py.</p>
+
+<h3>To run both dashboard and API at the same time</h3>
+<p>Open two separate terminal windows and run one command in each.</p>
+
+<h3>Verify the API is working</h3>
+<pre>curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d "{\"text\": \"We must fight back against oppression\"}"</pre>
+
+<hr>
+
+<!-- ══════════════════ 12. TROUBLESHOOT ══════════════════ -->
+<h2 id="troubleshoot">12. Known Issues &amp; Fixes</h2>
+
+<table>
+  <tr><th>Issue</th><th>Cause</th><th>Fix</th></tr>
+  <tr>
+    <td>Port 8000 already in use</td>
+    <td>A previous API process is still running</td>
+    <td>Run in PowerShell: <code>netstat -ano | findstr :8000</code> to find the PID, then <code>Stop-Process -Id &lt;PID&gt; -Force</code></td>
+  </tr>
+  <tr>
+    <td>FileNotFoundError: EchoAI_Chirper_dataset_BERT.xlsx</td>
+    <td>Files not in <code>data/</code> subfolder</td>
+    <td>Run <code>py -3.11 reorganize.py</code> to move files to correct locations</td>
+  </tr>
+  <tr>
+    <td>Warning: use_container_width deprecated</td>
+    <td>Streamlit 1.57+ changed the API</td>
+    <td>Already fixed in app.py — replaced with <code>width='stretch'</code></td>
+  </tr>
+  <tr>
+    <td>LDA crash on Windows (RuntimeError: bootstrapping phase)</td>
+    <td>gensim CoherenceModel c_v uses multiprocessing</td>
+    <td>Already fixed in pipeline.py — changed to <code>coherence='u_mass'</code></td>
+  </tr>
+  <tr>
+    <td>Prediction always "Neutral 100%"</td>
+    <td>Old API used rf_simple.pkl (TF-IDF only, no VADER)</td>
+    <td>Already fixed — api.py now uses rf_model.pkl with 211 features including VADER</td>
+  </tr>
+  <tr>
+    <td>sklearn version warning when loading .pkl</td>
+    <td>Model was trained with different sklearn version</td>
+    <td>Re-run pipeline.py to retrain with current installed version</td>
+  </tr>
+  <tr>
+    <td>Dashboard shows "Run pipeline.py first"</td>
+    <td>pipeline.py hasn't been run yet (FINAL.xlsx or daily_trends.csv missing)</td>
+    <td>Run: <code>py -3.11 pipeline.py</code></td>
+  </tr>
+</table>
+
+<hr>
+
+<!-- ══════════════════ 13. OWNERSHIP ══════════════════ -->
+<h2 id="ownership">13. Ownership Transfer Checklist</h2>
+
+<div class="box box-success">
+  <strong>What a new owner needs to know and do:</strong>
+</div>
+
+<h3>Environment Setup</h3>
+<table>
+  <tr><th>Check</th><th>Command</th></tr>
+  <tr><td>Python 3.11 installed</td><td><code>py -3.11 --version</code></td></tr>
+  <tr><td>All packages installed</td><td><code>py -3.11 -m pip install -r requirements.txt</code></td></tr>
+  <tr><td>NLTK data downloaded</td><td>Auto-downloaded on first run; or manually: <code>py -3.11 -c "import nltk; nltk.download('stopwords'); nltk.download('punkt')"</code></td></tr>
+</table>
+
+<h3>Project State (What is Already Done)</h3>
+<table>
+  <tr><th>Item</th><th>Status</th></tr>
+  <tr><td>All raw data files in <code>data/</code></td><td>Done</td></tr>
+  <tr><td>Pipeline run — models trained</td><td>Done — all <code>models/*.pkl</code> files exist</td></tr>
+  <tr><td>Pipeline run — figures generated</td><td>Done — <code>figures/*.png</code> files exist</td></tr>
+  <tr><td>Dashboard (app.py) working</td><td>Done — run <code>streamlit run app.py</code></td></tr>
+  <tr><td>API (api.py) upgraded to full-feature model</td><td>Done — predicts correctly with VADER</td></tr>
+  <tr><td>HTML classifier (index.html) works</td><td>Done — needs API running first</td></tr>
+</table>
+
+<h3>Key Things to Understand as Owner</h3>
+<ol style="margin: 10px 0 10px 20px; line-height: 2;">
+  <li>The dataset is mostly <strong>synthetic</strong> (2,936 of 3,000 posts). Results reflect synthetic data behavior, not purely real-world AI behavior.</li>
+  <li>The ML model classifies text as if it was written by one of the 5 <strong>Chirper.AI bot types</strong>. It was not trained on real human content.</li>
+  <li>If you want to update the model with new data: add new rows to the Excel file, re-run <code>pipeline.py</code>, then restart the API.</li>
+  <li>The <strong>dashboard</strong> (app.py) is read-only — it does not modify any files.</li>
+  <li>The <strong>API</strong> (api.py) is stateless — each request is independent, nothing is saved.</li>
+  <li>All model files in <code>models/</code> must stay — deleting any of them breaks either the API or the dashboard.</li>
+</ol>
+
+<h3>Files You Can Safely Edit</h3>
+<table>
+  <tr><th>File</th><th>Safe to change?</th><th>What you can change</th></tr>
+  <tr><td><code>index.html</code></td><td>Yes</td><td>UI styling, layout, text</td></tr>
+  <tr><td><code>app.py</code></td><td>Yes</td><td>Dashboard pages, charts, colors</td></tr>
+  <tr><td><code>api.py</code></td><td>Carefully</td><td>Endpoints, defaults — do not change feature order</td></tr>
+  <tr><td><code>pipeline.py</code></td><td>Carefully</td><td>Model settings — changes require full retraining</td></tr>
+  <tr><td>Data files in <code>data/</code></td><td>Read-only</td><td>Do not modify — these are the source of truth</td></tr>
+  <tr><td>Model files in <code>models/</code></td><td>Do NOT edit</td><td>Binary files — editing breaks everything</td></tr>
+</table>
+
+<hr>
+
+<!-- ══════════════════ 14. TECH STACK ══════════════════ -->
+<h2 id="tech">14. Technology Stack</h2>
+
+<table>
+  <tr><th>Category</th><th>Technology</th><th>Version</th><th>Used for</th></tr>
+  <tr><td rowspan="3">ML / NLP</td><td>scikit-learn</td><td>≥1.3</td><td>Random Forest, TF-IDF, PCA, K-Means, GridSearchCV</td></tr>
+  <tr><td>gensim</td><td>≥4.3</td><td>LDA topic modelling</td></tr>
+  <tr><td>vaderSentiment</td><td>≥3.3</td><td>Rule-based sentiment scoring</td></tr>
+  <tr><td rowspan="2">Deep Learning</td><td>transformers (Hugging Face)</td><td>≥4.35</td><td>BERT sentiment scoring (Steps 1–5, not in pipeline.py)</td></tr>
+  <tr><td>torch (PyTorch)</td><td>≥2.1</td><td>Backend for BERT</td></tr>
+  <tr><td rowspan="2">Network</td><td>networkx</td><td>≥3.1</td><td>Graph construction, centrality metrics</td></tr>
+  <tr><td>python-louvain</td><td>≥0.16</td><td>Community detection</td></tr>
+  <tr><td rowspan="4">Visualization</td><td>plotly</td><td>≥5.18</td><td>Interactive charts in dashboard</td></tr>
+  <tr><td>matplotlib + seaborn</td><td>≥3.7</td><td>Static figures saved as PNG</td></tr>
+  <tr><td>wordcloud</td><td>≥1.9</td><td>Topic word clouds</td></tr>
+  <tr><td>pyvis</td><td>≥0.3</td><td>Interactive network HTML</td></tr>
+  <tr><td rowspan="2">Web</td><td>streamlit</td><td>≥1.29</td><td>Dashboard web app</td></tr>
+  <tr><td>fastapi + uvicorn</td><td>≥0.104</td><td>REST API server</td></tr>
+  <tr><td>Stats</td><td>pymannkendall</td><td>≥1.4</td><td>Mann-Kendall trend test</td></tr>
+  <tr><td rowspan="2">Data</td><td>pandas</td><td>≥2.0</td><td>All data manipulation</td></tr>
+  <tr><td>numpy</td><td>≥1.24</td><td>Numerical operations</td></tr>
+  <tr><td>Utilities</td><td>joblib</td><td>≥1.3</td><td>Save/load model files</td></tr>
+</table>
+
+<hr>
+
+<!-- ══════════════════ FOOTER ══════════════════ -->
+<div style="text-align:center; color:#94a3b8; font-size:11px; padding: 30px 0;">
+  EchoAI Project &nbsp;·&nbsp; MSc Data Science Research &nbsp;·&nbsp; Chirper.AI Polarization Study &nbsp;·&nbsp; May 2026<br>
+  <em>This document covers the complete project as of the final state after all fixes and upgrades.</em>
+</div>
+
+</div><!-- .page -->
+</body>
+</html>

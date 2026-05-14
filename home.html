@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EchoAI – AI Polarization Research</title>
+<meta name="description" content="EchoAI: Studying polarization and echo chambers in AI-only social networks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #050b15;
+    --surface:   #0d1829;
+    --surface2:  #111f33;
+    --border:    rgba(99,179,237,0.14);
+    --text:      #e2e8f0;
+    --muted:     #94a3b8;
+    --accent:    #38bdf8;
+    --accent2:   #818cf8;
+    --green:     #22c55e;
+    --orange:    #f97316;
+    --red:       #ef4444;
+    --yellow:    #eab308;
+    --blue:      #3b82f6;
+    --radius:    18px;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Animated background orbs ── */
+  .bg-orbs {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+  }
+  .orb {
+    position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4;
+    animation: float 18s infinite ease-in-out;
+  }
+  .orb1 { width: 500px; height: 500px; background: #3b82f6; top: -150px; left: -150px; }
+  .orb2 { width: 400px; height: 400px; background: #818cf8; bottom: -100px; right: -100px; animation-delay: -6s; }
+  .orb3 { width: 350px; height: 350px; background: #06b6d4; top: 40%; left: 50%; animation-delay: -12s; }
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(60px, -40px) scale(1.1); }
+    66% { transform: translate(-50px, 50px) scale(0.9); }
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(20px);
+    background: rgba(5,11,21,0.75);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 0;
+  }
+  .nav-inner {
+    max-width: 1200px; margin: 0 auto; padding: 0 30px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 800; font-size: 20px;
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .nav-links { display: flex; gap: 30px; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--accent); }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(34,197,94,0.1); color: var(--green);
+    padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    border: 1px solid rgba(34,197,94,0.3);
+  }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green); animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ── Hero ── */
+  .hero {
+    max-width: 1200px; margin: 0 auto;
+    padding: 80px 30px 60px;
+    position: relative; z-index: 1; text-align: center;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.1);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent);
+    padding: 6px 16px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .hero h1 {
+    font-size: clamp(40px, 6vw, 72px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #fff 0%, #38bdf8 50%, #818cf8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hero p {
+    font-size: 18px; color: var(--muted);
+    max-width: 720px; margin: 0 auto 40px;
+    line-height: 1.7;
+  }
+  .hero-stats {
+    display: flex; justify-content: center; gap: 60px; flex-wrap: wrap;
+    margin-top: 40px;
+  }
+  .stat { text-align: center; }
+  .stat-val {
+    font-size: 36px; font-weight: 800;
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .stat-lbl {
+    font-size: 12px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px;
+  }
+
+  /* ── Sections ── */
+  section { position: relative; z-index: 1; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 60px 30px; }
+  .section-title {
+    text-align: center; margin-bottom: 50px;
+  }
+  .section-title h2 {
+    font-size: 36px; font-weight: 800; letter-spacing: -1px;
+    margin-bottom: 10px;
+  }
+  .section-title p { color: var(--muted); font-size: 15px; }
+
+  /* ── Feature cards (the hub buttons) ── */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+  }
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+    display: flex; flex-direction: column;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--card-accent, #38bdf8), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .feature-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--card-accent, #38bdf8);
+    box-shadow: 0 20px 60px rgba(56,189,248,0.15);
+  }
+  .feature-card:hover::before { opacity: 1; }
+  .feature-icon {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    margin-bottom: 20px;
+    background: rgba(56,189,248,0.1);
+    border: 1px solid rgba(56,189,248,0.2);
+  }
+  .feature-card[data-type="dashboard"] { --card-accent: #38bdf8; }
+  .feature-card[data-type="dashboard"] .feature-icon { background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.3); }
+
+  .feature-card[data-type="classifier"] { --card-accent: #818cf8; }
+  .feature-card[data-type="classifier"] .feature-icon { background: rgba(129,140,248,0.1); border-color: rgba(129,140,248,0.3); }
+
+  .feature-card[data-type="network"] { --card-accent: #22c55e; }
+  .feature-card[data-type="network"] .feature-icon { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3); }
+
+  .feature-card[data-type="report"] { --card-accent: #f97316; }
+  .feature-card[data-type="report"] .feature-icon { background: rgba(249,115,22,0.1); border-color: rgba(249,115,22,0.3); }
+
+  .feature-card h3 {
+    font-size: 22px; font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .feature-card p {
+    color: var(--muted); font-size: 14px; line-height: 1.6;
+    margin-bottom: 24px;
+    flex-grow: 1;
+  }
+  .feature-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--card-accent, #38bdf8), color-mix(in srgb, var(--card-accent, #38bdf8) 70%, #fff 30%));
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600; font-size: 14px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none; cursor: pointer;
+    align-self: flex-start;
+  }
+  .feature-card:hover .feature-btn {
+    box-shadow: 0 8px 24px rgba(56,189,248,0.3);
+  }
+  .feature-meta {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--muted);
+    margin-top: 12px;
+  }
+  .meta-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+  }
+
+  /* ── Agent types section ── */
+  .agents {
+    background: linear-gradient(180deg, transparent, rgba(13,24,41,0.6), transparent);
+    padding: 60px 0;
+  }
+  .agent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+  }
+  .agent-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .agent-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--agent-color);
+  }
+  .agent-emoji { font-size: 36px; margin-bottom: 12px; }
+  .agent-name {
+    font-weight: 700; font-size: 16px;
+    color: var(--agent-color);
+    margin-bottom: 8px;
+  }
+  .agent-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* ── Pipeline section ── */
+  .pipeline-flow {
+    display: flex; justify-content: center; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 30px 20px;
+  }
+  .pipe-step {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 13px; font-weight: 600;
+    text-align: center;
+    min-width: 110px;
+    color: var(--text);
+  }
+  .pipe-step-num {
+    display: inline-block;
+    background: rgba(56,189,248,0.2);
+    color: var(--accent);
+    width: 24px; height: 24px;
+    line-height: 24px;
+    border-radius: 50%;
+    font-size: 11px; font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .pipe-arrow { color: var(--muted); font-size: 20px; }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 30px 30px;
+    margin-top: 60px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    position: relative; z-index: 1;
+  }
+  footer .footer-links {
+    display: flex; justify-content: center; gap: 30px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ── Modal for service-down warning ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 36px 32px;
+    max-width: 480px;
+    text-align: center;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .modal-icon {
+    font-size: 48px; margin-bottom: 16px;
+  }
+  .modal h3 {
+    font-size: 22px; margin-bottom: 12px;
+  }
+  .modal p {
+    color: var(--muted); font-size: 14px; line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .modal pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 12px;
+    color: var(--accent);
+    text-align: left;
+    overflow-x: auto;
+    margin-bottom: 20px;
+    font-family: 'Consolas', monospace;
+  }
+  .modal-actions {
+    display: flex; gap: 10px; justify-content: center;
+  }
+  .modal-btn {
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-weight: 600; font-size: 14px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    color: #fff;
+  }
+  .btn-primary:hover { box-shadow: 0 8px 20px rgba(56,189,248,0.3); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--surface2); }
+
+  /* ── Mobile ── */
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+    .hero { padding: 60px 20px 40px; }
+    .hero-stats { gap: 30px; }
+    .pipe-arrow { display: none; }
+    .pipe-step { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Animated background ── -->
+<div class="bg-orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+</div>
+
+<!-- ── Navigation ── -->
+<nav>
+  <div class="nav-inner">
+    <div class="logo">
+      <div class="logo-icon">🤖</div>
+      <span>EchoAI</span>
+    </div>
+    <div class="nav-links">
+      <a href="#features">Tools</a>
+      <a href="#agents">Agent Types</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="EchoAI_Project_Report.html" target="_blank">Docs</a>
+    </div>
+    <div class="status-pill">
+      <span class="status-dot"></span>
+      <span>System Ready</span>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="hero-badge">MSc Data Science Research</div>
+  <h1>Polarization in<br>AI-Only Networks</h1>
+  <p>
+    EchoAI investigates whether AI agents on social networks like Chirper.AI naturally
+    develop polarized opinions and form echo chambers — using NLP, machine learning,
+    and network analysis on 3,000 posts across 5 ideological agent types.
+  </p>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-val">3,000</div><div class="stat-lbl">Posts Analyzed</div></div>
+    <div class="stat"><div class="stat-val">5</div><div class="stat-lbl">Agent Types</div></div>
+    <div class="stat"><div class="stat-val">211</div><div class="stat-lbl">ML Features</div></div>
+    <div class="stat"><div class="stat-val">7</div><div class="stat-lbl">Dashboard Pages</div></div>
+  </div>
+</section>
+
+<!-- ── Feature hub ── -->
+<section id="features">
+  <div class="container">
+    <div class="section-title">
+      <h2>Explore the Project</h2>
+      <p>Pick a tool to dive into the analysis</p>
+    </div>
+
+    <div class="features">
+
+      <!-- Dashboard card -->
+      <a class="feature-card" data-type="dashboard" href="http://localhost:8501" target="_blank" onclick="return openStreamlit(event);">
+        <div class="feature-icon">📊</div>
+        <h3>Interactive Dashboard</h3>
+        <p>
+          Multi-page Streamlit dashboard with sentiment analysis, topic modelling,
+          clustering, network graphs, and time-series polarization trends.
+        </p>
+        <button class="feature-btn">Open Dashboard →</button>
+        <div class="feature-meta">
+          <span class="meta-dot"></span>
+          <span>Requires: <code style="color:#38bdf8">streamlit run app.py</code></span>
+        </div>
+      </a>
+
+      <!-- Classifier card -->
+      <a class="feature-card" data-type="classifier" href="http://localhost:8501/?page=Classifier" target="_blank" onclick="return openClassifier(event);">
+        <div class="feature-icon">🎯</div>
+        <h3>Text Classifier</h3>
+        <p>
+          Type any text and the trained Random Forest model predicts which of the 5
+          AI agent types likely wrote it — with probabilities and similar posts.
+        </p>
+        <button class="feature-btn">Try Classifier →</button>
+        <div class="feature-meta">
+          <span class="meta-dot"></span>
+          <span>Built into the dashboard (Classifier page)</span>
+        </div>
+      </a>
+
+      <!-- Network card -->
+      <a class="feature-card" data-type="network" href="network_interactive.html" target="_blank">
+        <div class="feature-icon">🕸️</div>
+        <h3>Interactive Network</h3>
+        <p>
+          Explore the AI agent interaction graph. Drag nodes, zoom in, and discover
+          which bots act as bridges between ideological clusters.
+        </p>
+        <button class="feature-btn">View Network →</button>
+        <div class="feature-meta">
+          <span class="meta-dot"></span>
+          <span>Static HTML — works offline</span>
+        </div>
+      </a>
+
+      <!-- Report card -->
+      <a class="feature-card" data-type="report" href="EchoAI_Project_Report.html" target="_blank">
+        <div class="feature-icon">📘</div>
+        <h3>Project Report</h3>
+        <p>
+          Full technical documentation covering architecture, models, files,
+          API endpoints, and ownership transfer guide. PDF-printable.
+        </p>
+        <button class="feature-btn">Read Docs →</button>
+        <div class="feature-meta">
+          <span class="meta-dot"></span>
+          <span>Static HTML — works offline</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Agent types ── -->
+<section id="agents" class="agents">
+  <div class="container">
+    <div class="section-title">
+      <h2>The Five Agent Types</h2>
+      <p>Every post in the dataset is classified into one of these categories</p>
+    </div>
+    <div class="agent-grid">
+      <div class="agent-card" style="--agent-color:#ef4444">
+        <div class="agent-emoji">🔴</div>
+        <div class="agent-name">Extremist</div>
+        <div class="agent-desc">Radical or violent ideologies</div>
+      </div>
+      <div class="agent-card" style="--agent-color:#f97316">
+        <div class="agent-emoji">🟠</div>
+        <div class="agent-name">Conservative</div>
+        <div class="agent-desc">Traditional, right-leaning views</div>
+      </div>
+      <div class="agent-card" style="--agent-color:#eab308">
+        <div class="agent-emoji">🟡</div>
+        <div class="agent-name">Moderate</div>
+        <div class="agent-desc">Balanced, centrist perspectives</div>
+      </div>
+      <div class="agent-card" style="--agent-color:#94a3b8">
+        <div class="agent-emoji">⚪</div>
+        <div class="agent-name">Neutral</div>
+        <div class="agent-desc">Objective, no political leaning</div>
+      </div>
+      <div class="agent-card" style="--agent-color:#3b82f6">
+        <div class="agent-emoji">🔵</div>
+        <div class="agent-name">Progressive</div>
+        <div class="agent-desc">Reform-oriented, left-leaning views</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Pipeline ── -->
+<section id="pipeline">
+  <div class="container">
+    <div class="section-title">
+      <h2>Analysis Pipeline</h2>
+      <p>How raw data becomes research insight</p>
+    </div>
+    <div class="pipeline-flow">
+      <div class="pipe-step"><div class="pipe-step-num">1</div>Raw Data</div>
+      <span class="pipe-arrow">→</span>
+      <div class="pipe-step"><div class="pipe-step-num">2</div>Preprocessing</div>
+      <span class="pipe-arrow">→</span>
+      <div class="pipe-step"><div class="pipe-step-num">3</div>VADER + BERT</div>
+      <span class="pipe-arrow">→</span>
+      <div class="pipe-step"><div class="pipe-step-num">4</div>LDA Topics</div>
+      <span class="pipe-arrow">→</span>
+      <div class="pipe-step"><div class="pipe-step-num">5</div>Clustering</div>
+      <span class="pipe-arrow">→</span>
+      <div class="pipe-step"><div class="pipe-step-num">6</div>Classifier</div>
+      <span class="pipe-arrow">→</span>
+      <div class="pipe-step"><div class="pipe-step-num">7</div>Network</div>
+      <span class="pipe-arrow">→</span>
+      <div class="pipe-step"><div class="pipe-step-num">8</div>Trends</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer>
+  <div class="footer-links">
+    <a href="#features">Tools</a>
+    <a href="#agents">Agent Types</a>
+    <a href="#pipeline">Pipeline</a>
+    <a href="EchoAI_Project_Report.html" target="_blank">Documentation</a>
+    <a href="index.html">Classifier</a>
+  </div>
+  <p>EchoAI · MSc Data Science Research · Chirper.AI Polarization Study · 2026</p>
+</footer>
+
+<!-- ── Modal: Streamlit not running ── -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-icon">⚠️</div>
+    <h3>Dashboard Not Running</h3>
+    <p>The Streamlit dashboard needs to be started manually. Run this command in your terminal:</p>
+    <pre>py -3.11 -m streamlit run app.py</pre>
+    <p style="font-size:13px;">It will open automatically on port <strong>8501</strong>.</p>
+    <div class="modal-actions">
+      <button class="modal-btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn btn-primary" onclick="openDashboardAnyway()">Open Anyway</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Check if Streamlit is running before navigating
+  function openStreamlit(e) {
+    e.preventDefault();
+    fetch('http://localhost:8501/_stcore/health', { mode: 'no-cors', signal: AbortSignal.timeout(800) })
+      .then(() => { window.open('http://localhost:8501', '_blank'); })
+      .catch(() => { document.getElementById('modal').classList.add('show'); });
+    return false;
+  }
+
+  function openClassifier(e) {
+    e.preventDefault();
+    fetch('http://localhost:8501/_stcore/health', { mode: 'no-cors', signal: AbortSignal.timeout(800) })
+      .then(() => { window.open('http://localhost:8501', '_blank'); })
+      .catch(() => { document.getElementById('modal').classList.add('show'); });
+    return false;
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('show');
+  }
+
+  function openDashboardAnyway() {
+    window.open('http://localhost:8501', '_blank');
+    closeModal();
+  }
+
+  // Close modal on overlay click
+  document.getElementById('modal').addEventListener('click', (e) => {
+    if (e.target.id === 'modal') closeModal();
+  });
+
+  // Live status indicators
+  async function checkServices() {
+    // Check API
+    try {
+      const r = await fetch('http://localhost:8000/health', { signal: AbortSignal.timeout(800) });
+      if (r.ok) console.log('API: online');
+    } catch (e) { console.log('API: offline'); }
+  }
+  checkServices();
+</script>
+
+</body>
+</html>

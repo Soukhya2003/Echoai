@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+.DS_Store
+.ipynb_checkpoints/
+
+# Local-only
+network_interactive.html

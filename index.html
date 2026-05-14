@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Echo AI – Text Classifier</title>
+  <meta name="description" content="Echo AI classifies social media text into Extremist, Conservative, Moderate, Neutral, or Progressive using a trained machine learning model." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Reset & Tokens ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #050b15;
+      --surface:   #0d1829;
+      --surface2:  #111f33;
+      --border:    rgba(99,179,237,0.12);
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --accent:    #38bdf8;
+      --accent2:   #818cf8;
+      --glow:      rgba(56,189,248,0.18);
+
+      --extremist:    #ef4444;
+      --conservative: #f97316;
+      --moderate:     #eab308;
+      --neutral:      #94a3b8;
+      --progressive:  #3b82f6;
+
+      --radius:  16px;
+      --radius-sm: 8px;
+      --shadow:  0 8px 40px rgba(0,0,0,0.6);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Animated Background ────────────────────────────────── */
+    .bg-orbs {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      overflow: hidden;
+    }
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(120px); opacity: 0.25;
+      animation: drift 18s ease-in-out infinite alternate;
+    }
+    .orb-1 { width: 600px; height: 600px; background: #1e40af; top: -200px; left: -150px; animation-delay: 0s; }
+    .orb-2 { width: 500px; height: 500px; background: #0e7490; bottom: -100px; right: -100px; animation-delay: -6s; }
+    .orb-3 { width: 400px; height: 400px; background: #4f46e5; top: 40%; left: 50%; animation-delay: -12s; }
+
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(40px, -40px) scale(1.08); }
+    }
+
+    /* ── Layout ─────────────────────────────────────────────── */
+    .wrapper {
+      position: relative; z-index: 1;
+      max-width: 860px; margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    header { text-align: center; margin-bottom: 48px; }
+
+    .logo-badge {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: rgba(56,189,248,0.08);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 6px 18px;
+      font-size: 13px; font-weight: 500; color: var(--accent);
+      margin-bottom: 20px;
+      letter-spacing: 0.5px;
+    }
+    .logo-badge .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s ease infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #e2e8f0 30%, var(--accent) 70%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 14px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 16px;
+      max-width: 500px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── Card ───────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: var(--shadow);
+    }
+
+    /* ── Textarea ───────────────────────────────────────────── */
+    .input-label {
+      font-size: 13px; font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .textarea-wrap { position: relative; }
+
+    textarea#postInput {
+      width: 100%; resize: vertical;
+      min-height: 150px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px; color: var(--text);
+      transition: border-color 0.25s, box-shadow 0.25s;
+      outline: none;
+      line-height: 1.6;
+    }
+    textarea#postInput::placeholder { color: var(--muted); }
+    textarea#postInput:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(56,189,248,0.12);
+    }
+
+    .char-count {
+      position: absolute; bottom: 10px; right: 14px;
+      font-size: 12px; color: var(--muted);
+      pointer-events: none;
+    }
+
+    /* ── Analyze Button ─────────────────────────────────────── */
+    #analyzeBtn {
+      margin-top: 18px;
+      width: 100%;
+      padding: 15px 24px;
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      border: none; border-radius: var(--radius-sm);
+      color: #fff; font-family: 'Inter', sans-serif;
+      font-size: 15px; font-weight: 700;
+      cursor: pointer; letter-spacing: 0.3px;
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+      position: relative; overflow: hidden;
+    }
+    #analyzeBtn::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+      opacity: 0; transition: opacity 0.2s;
+    }
+    #analyzeBtn:hover:not(:disabled)::after { opacity: 1; }
+    #analyzeBtn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(99,102,241,0.45);
+    }
+    #analyzeBtn:active:not(:disabled) { transform: translateY(0); }
+    #analyzeBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* ── Spinner ────────────────────────────────────────────── */
+    .spinner {
+      display: inline-block; width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle; margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Error / Info banners ───────────────────────────────── */
+    .banner {
+      margin-top: 20px; padding: 14px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 14px; font-weight: 500;
+      display: none;
+    }
+    .banner.error { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.35); color: #fca5a5; }
+    .banner.warning { background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3); color: #fde047; }
+
+    /* ── Results ────────────────────────────────────────────── */
+    #results {
+      margin-top: 36px;
+      display: none;
+      animation: fadeUp 0.5s ease forwards;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Verdict Box ────────────────────────────────────────── */
+    .verdict-box {
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      display: flex; align-items: center; gap: 24px;
+      margin-bottom: 28px;
+      position: relative; overflow: hidden;
+      border: 1px solid;
+    }
+    .verdict-box::before {
+      content: ''; position: absolute; inset: 0;
+      opacity: 0.08;
+    }
+    .verdict-emoji { font-size: 52px; line-height: 1; flex-shrink: 0; }
+    .verdict-text .label {
+      font-size: 12px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 1px; opacity: 0.7; margin-bottom: 4px;
+    }
+    .verdict-text .category {
+      font-size: 28px; font-weight: 800;
+      line-height: 1.1;
+    }
+    .verdict-text .desc {
+      margin-top: 6px; font-size: 14px; opacity: 0.75; line-height: 1.5;
+    }
+    .verdict-confidence {
+      margin-left: auto; text-align: right; flex-shrink: 0;
+    }
+    .verdict-confidence .pct {
+      font-size: 38px; font-weight: 800;
+    }
+    .verdict-confidence .pct-label {
+      font-size: 12px; opacity: 0.6; font-weight: 500;
+    }
+
+    /* ── Section Heading ────────────────────────────────────── */
+    .section-title {
+      font-size: 13px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.9px;
+      color: var(--muted); margin-bottom: 14px;
+    }
+
+    /* ── Confidence Bars ────────────────────────────────────── */
+    .bars-grid {
+      display: grid; gap: 10px;
+      margin-bottom: 28px;
+    }
+    .bar-row { display: flex; flex-direction: column; gap: 6px; }
+    .bar-header { display: flex; justify-content: space-between; font-size: 13px; }
+    .bar-name { font-weight: 600; }
+    .bar-pct { font-weight: 700; }
+    .bar-track {
+      height: 8px; background: var(--surface2);
+      border-radius: 99px; overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%; border-radius: 99px;
+      transition: width 1s cubic-bezier(.4,0,.2,1);
+      width: 0;
+    }
+
+    /* ── Similar Posts ──────────────────────────────────────── */
+    .posts-list { display: flex; flex-direction: column; gap: 12px; }
+    .post-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .post-card:hover {
+      border-color: rgba(99,179,237,0.3);
+      transform: translateX(3px);
+    }
+    .post-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .post-badge {
+      font-size: 11px; font-weight: 700;
+      padding: 3px 10px; border-radius: 99px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .post-sim {
+      font-size: 12px; color: var(--muted);
+    }
+    .post-text {
+      font-size: 13px; color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── Footer ─────────────────────────────────────────────── */
+    footer {
+      text-align: center; margin-top: 60px;
+      font-size: 13px; color: var(--muted);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 540px) {
+      .verdict-box { flex-wrap: wrap; }
+      .verdict-confidence { margin-left: 0; text-align: left; }
+      .verdict-emoji { font-size: 38px; }
+      .verdict-text .category { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Animated background orbs -->
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<div class="wrapper">
+
+  <!-- Header -->
+  <header>
+    <div class="logo-badge"><span class="dot"></span> Echo AI · Text Intelligence</div>
+    <h1>Classify Any Text Instantly</h1>
+    <p class="subtitle">Paste a post, comment, or article. Our ML model detects political leaning &amp; extremism in seconds.</p>
+  </header>
+
+  <!-- Input Card -->
+  <div class="card">
+    <label class="input-label" for="postInput">✏️ Your Text</label>
+    <div class="textarea-wrap">
+      <textarea
+        id="postInput"
+        placeholder="Type or paste any text here — tweet, post, news excerpt, comment…"
+        rows="6"
+        maxlength="2000"
+      ></textarea>
+      <span class="char-count" id="charCount">0 / 2000</span>
+    </div>
+
+    <button id="analyzeBtn" onclick="analyze()">
+      🔍 &nbsp;Analyze Text
+    </button>
+
+    <div class="banner error" id="errorBanner"></div>
+    <div class="banner warning" id="warnBanner"></div>
+  </div>
+
+  <!-- Results (hidden until prediction) -->
+  <div id="results">
+
+    <!-- Verdict -->
+    <div class="verdict-box" id="verdictBox">
+      <div class="verdict-emoji" id="verdictEmoji"></div>
+      <div class="verdict-text">
+        <div class="label">Predicted Category</div>
+        <div class="category" id="verdictCategory"></div>
+        <div class="desc" id="verdictDesc"></div>
+      </div>
+      <div class="verdict-confidence">
+        <div class="pct" id="verdictPct"></div>
+        <div class="pct-label">Confidence</div>
+      </div>
+    </div>
+
+    <!-- Confidence Bars -->
+    <div class="section-title">📊 Confidence Breakdown</div>
+    <div class="bars-grid" id="barsGrid"></div>
+
+    <!-- Similar Posts -->
+    <div id="similarSection">
+      <div class="section-title">🔎 Similar Posts from Dataset</div>
+      <div class="posts-list" id="postsList"></div>
+    </div>
+
+  </div>
+
+  <footer>
+    Powered by <strong>Random Forest + TF-IDF</strong> trained on the EchoAI Chirper dataset.
+    API: <a href="http://localhost:8000/health" target="_blank">localhost:8000</a>
+  </footer>
+
+</div>
+
+<script>
+  const API = 'http://localhost:8000';
+
+  const CATEGORIES = {
+    extremist:    { color: '#ef4444', bg: 'rgba(239,68,68,0.08)',  border: 'rgba(239,68,68,0.4)',  desc: 'Content promoting radical or violent ideologies' },
+    conservative: { color: '#f97316', bg: 'rgba(249,115,22,0.08)', border: 'rgba(249,115,22,0.4)', desc: 'Content reflecting traditional or right-leaning views' },
+    moderate:     { color: '#eab308', bg: 'rgba(234,179,8,0.08)',  border: 'rgba(234,179,8,0.4)',  desc: 'Content with balanced, centrist perspectives' },
+    neutral:      { color: '#94a3b8', bg: 'rgba(148,163,184,0.08)',border: 'rgba(148,163,184,0.4)',desc: 'Objective content without strong political leaning' },
+    progressive:  { color: '#3b82f6', bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.4)', desc: 'Content reflecting reform-oriented or left-leaning views' },
+  };
+
+  // ── Char counter ──
+  const input = document.getElementById('postInput');
+  const counter = document.getElementById('charCount');
+  input.addEventListener('input', () => {
+    counter.textContent = `${input.value.length} / 2000`;
+  });
+
+  // ── Analyze ──
+  async function analyze() {
+    const text = input.value.trim();
+    hideBanners(); hideResults();
+
+    if (!text) {
+      showWarn('Please enter some text first.');
+      return;
+    }
+    if (text.split(/\s+/).length < 3) {
+      showWarn('Please enter at least a few words for a meaningful classification.');
+      return;
+    }
+
+    const btn = document.getElementById('analyzeBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Analyzing…';
+
+    try {
+      const res = await fetch(`${API}/predict`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `Server returned ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (data.error) { showError(data.error); return; }
+      renderResults(data);
+
+    } catch (e) {
+      if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
+        showError('Cannot reach the API. Make sure the backend is running:<br><code style="font-size:13px; background:rgba(0,0,0,0.3); padding:4px 8px; border-radius:4px">uvicorn api:app --reload</code>');
+      } else {
+        showError(`Error: ${e.message}`);
+      }
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '🔍 &nbsp;Analyze Text';
+    }
+  }
+
+  function renderResults(data) {
+    const cat   = data.predicted_agent.toLowerCase();
+    const meta  = CATEGORIES[cat] || { color: '#94a3b8', bg: 'rgba(148,163,184,0.08)', border: 'rgba(148,163,184,0.4)', desc: '' };
+    const probs = data.probabilities || {};
+    const topPct = probs[cat] ?? 0;
+
+    // ── Verdict Box ──
+    const vbox = document.getElementById('verdictBox');
+    vbox.style.background    = meta.bg;
+    vbox.style.borderColor   = meta.border;
+    document.getElementById('verdictEmoji').textContent    = data.emoji || '❓';
+    document.getElementById('verdictCategory').textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+    document.getElementById('verdictCategory').style.color = meta.color;
+    document.getElementById('verdictDesc').textContent     = meta.desc;
+    document.getElementById('verdictPct').textContent      = `${topPct}%`;
+    document.getElementById('verdictPct').style.color      = meta.color;
+
+    // ── Confidence Bars ──
+    const grid = document.getElementById('barsGrid');
+    grid.innerHTML = '';
+
+    // Sort categories by probability descending
+    const sorted = Object.entries(probs).sort((a, b) => b[1] - a[1]);
+
+    sorted.forEach(([label, pct]) => {
+      const m = CATEGORIES[label.toLowerCase()] || { color: '#94a3b8' };
+      const row = document.createElement('div');
+      row.className = 'bar-row';
+      row.innerHTML = `
+        <div class="bar-header">
+          <span class="bar-name">${label.charAt(0).toUpperCase() + label.slice(1)}</span>
+          <span class="bar-pct" style="color:${m.color}">${pct}%</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" data-pct="${pct}" style="background:${m.color}; width:0%"></div>
+        </div>`;
+      grid.appendChild(row);
+    });
+
+    // Animate bars after DOM paint
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      document.querySelectorAll('.bar-fill').forEach(el => {
+        el.style.width = el.dataset.pct + '%';
+      });
+    }));
+
+    // ── Similar Posts ──
+    const postsList = document.getElementById('postsList');
+    const simSec    = document.getElementById('similarSection');
+    postsList.innerHTML = '';
+
+    if (data.similar_posts && data.similar_posts.length > 0) {
+      simSec.style.display = 'block';
+      data.similar_posts.forEach(post => {
+        const pm = CATEGORIES[post.agent_type] || { color: '#94a3b8', bg: 'rgba(148,163,184,0.15)' };
+        const div = document.createElement('div');
+        div.className = 'post-card';
+        div.innerHTML = `
+          <div class="post-meta">
+            <span class="post-badge" style="background:${pm.bg || 'rgba(148,163,184,0.12)'}; color:${pm.color}; border:1px solid ${pm.color}40">
+              ${post.agent_type}
+            </span>
+            <span class="post-sim">Similarity: ${post.similarity}%</span>
+          </div>
+          <div class="post-text">${escapeHtml(post.text)}…</div>`;
+        postsList.appendChild(div);
+      });
+    } else {
+      simSec.style.display = 'none';
+    }
+
+    showResults();
+  }
+
+  // ── Helpers ──
+  function showResults()  { const r = document.getElementById('results'); r.style.display = 'block'; r.style.animation = 'none'; requestAnimationFrame(() => { r.style.animation = ''; }); }
+  function hideResults()  { document.getElementById('results').style.display = 'none'; }
+  function hideBanners()  { document.getElementById('errorBanner').style.display = 'none'; document.getElementById('warnBanner').style.display = 'none'; }
+  function showError(msg) { const b = document.getElementById('errorBanner'); b.innerHTML = '⚠️ ' + msg; b.style.display = 'block'; }
+  function showWarn(msg)  { const b = document.getElementById('warnBanner');  b.innerHTML = '💡 ' + msg; b.style.display = 'block'; }
+  function escapeHtml(s)  { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // Allow Ctrl+Enter to analyze
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) analyze();
+  });
+</script>
+
+</body>
+</html>
